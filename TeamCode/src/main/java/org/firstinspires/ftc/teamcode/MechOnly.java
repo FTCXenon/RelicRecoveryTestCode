@@ -1,31 +1,39 @@
-//11/1/17
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Mechanum Teleop", group="Mecanum Opmode")
-public class MechanumTeleop extends LinearOpMode {
+import org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation;
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.VuMarkInstanceId;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-    // Declare OpMode members.
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor LF = null;
-    private DcMotor RF = null;
-    private DcMotor LB = null;
-    private DcMotor RB = null;
 
-    Servo jointOneLeft;
-    Servo jointOneRight;
-    Servo jointTwo;
-    Servo clawRotate;
+/**
+ * Created by bridgetmacmillan on 9/26/17.
+ */
 
-    Servo clawLeft;
-    Servo clawRight;
+@TeleOp(name = "Mechanum Only d")
+public class MechOnly extends LinearOpMode{
 
+    DcMotor LF;
+    DcMotor RF;
+    DcMotor LB;
+    DcMotor RB;
 
     double speed;
     double pi = Math.PI;
@@ -36,61 +44,32 @@ public class MechanumTeleop extends LinearOpMode {
     double leftY;
     double motorPower;
 
-    @Override
-    public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+    private ElapsedTime runtime = new ElapsedTime();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
 
+    public static final String TAG = "Vuforia VuMark Sample";
+    OpenGLMatrix lastLocation = null;
+    VuforiaLocalizer vuforia;
+
+    public void runOpMode() throws InterruptedException {
+        waitForStart();
         LF = hardwareMap.dcMotor.get("LF");
         RF = hardwareMap.dcMotor.get("RF");
         LB = hardwareMap.dcMotor.get("LB");
         RB = hardwareMap.dcMotor.get("RB");
 
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        LF.setDirection(DcMotor.Direction.REVERSE);
-        RF.setDirection(DcMotor.Direction.FORWARD);
         LB.setDirection(DcMotor.Direction.REVERSE);
-        RB.setDirection(DcMotor.Direction.FORWARD);
-
-        // Wait for the game to start (driver presses PLAY)
-        jointOneLeft = hardwareMap.get(Servo.class, "J1L");
-        jointOneRight = hardwareMap.get(Servo.class, "J1R");
-
-        jointTwo = hardwareMap.get(Servo.class, "J2");
-
-        clawRotate = hardwareMap.get(Servo.class, "S");
-
-        clawLeft = hardwareMap.get(Servo.class, "CL");
-        clawRight = hardwareMap.get(Servo.class, "CR");
-
-        double rotation = 0;
-
-        jointOneRight.setPosition(0.5);
-        jointOneLeft.setPosition(0.5);
-        clawRotate.setPosition(0.5);
-        jointTwo.setPosition(0.5);
-
+        RB.setDirection(DcMotor.Direction.REVERSE);
 
         waitForStart();
-        runtime.reset();
 
-        MechanumInit();
-        // Run until the end of the match (driver presses STOP)
+
         while (opModeIsActive()) {
 
-            // Setup a variable for each drive wheel to save power level for telemetry
             double frontLeftPower;
             double frontRightPower;
             double backLeftPower;
             double backRightPower;
-
-
-
 
             double x = gamepad1.left_stick_x;
             double y = -gamepad1.left_stick_y;
@@ -152,42 +131,17 @@ public class MechanumTeleop extends LinearOpMode {
                 RB.setPower(motorPower);
             }
 
-            if (gamepad2.dpad_down) {
-                jointTwo.setPosition(1);
-                telemetry.addData("ARM 1","");
-            } else if (gamepad2.dpad_up) {
-                jointTwo.setPosition(0);
-                telemetry.addData("ARM 0","");
+            double rotation;
+
+            if (gamepad2.right_stick_x > 0){
+                rotation = ((gamepad1.right_stick_x*gamepad1.right_stick_x)/1);
+                telemetry.addData("POS ROTATION", "");
+            }else if (gamepad2.right_stick_x < 0){
+                rotation = (((gamepad1.right_stick_x*gamepad1.right_stick_x)/-1));
+                telemetry.addData("NEG ROTATION", "");
             } else {
-                jointTwo.setPosition(0.5);
-                telemetry.addData("ARM STAHP","");
-            }
-
-
-            if (gamepad2.left_bumper){
-                clawRotate.setPosition(0.9);
-                telemetry.addData("ROTATE 1","");
-            } else if (gamepad2.right_bumper){
-                clawRotate.setPosition(0.1);
-                telemetry.addData("ROTATE 0","");
-            } else if (!gamepad2.right_bumper || !gamepad2.left_bumper){
-                clawRotate.setPosition(0.5);
-                telemetry.addData("STOP ROTATE","");
-            } else {
-                clawRotate.setPosition(0.5);
-            }
-
-
-            if (gamepad2.left_trigger>0){
-                clawLeft.setPosition(0);
-            } else {
-                clawLeft.setPosition(1);
-            }
-
-            if (gamepad2.right_trigger>0){
-                clawRight.setPosition(0);
-            } else {
-                clawRight.setPosition(1);
+                telemetry.addData("ZERO ROTATION", "");
+                rotation = 0;
             }
 
 
@@ -201,13 +155,6 @@ public class MechanumTeleop extends LinearOpMode {
             LB.setPower(backLeftPower);
             RB.setPower(backRightPower);
 
-
-
-
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Left", "front (%.2f), back (%.2f)", frontLeftPower, backLeftPower);
-            telemetry.addData("Right", "front (%.2f), back (%.2f)", frontRightPower, backRightPower);
-            telemetry.update();
         }
     }
     public void MechanumInit(){

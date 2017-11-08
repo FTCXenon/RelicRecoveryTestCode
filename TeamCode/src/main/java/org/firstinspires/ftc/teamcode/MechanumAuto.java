@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 /**
  * Created by bridgetmacmillan on 9/11/17.
  */
+@Disabled
 
 @Autonomous(name = "Mechanum Auto")
 public class MechanumAuto extends LinearOpMode{
@@ -29,11 +31,14 @@ public class MechanumAuto extends LinearOpMode{
     DcMotor LB;
     DcMotor RB;
 
+
+
     OpenGLMatrix lastLocation = null;
     VuforiaLocalizer vuforia;
 
     VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
     VuforiaTrackable relicTemplate = relicTrackables.get(0);
+
 
     public void HardwareMap(){
         LF = hardwareMap.dcMotor.get("LF");
