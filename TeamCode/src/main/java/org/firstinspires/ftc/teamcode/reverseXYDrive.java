@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Created by bridgetmacmillan on 9/26/17.
  */
 
-@TeleOp(name = "reverseYDrive")
-public class reverseYDrive extends LinearOpMode{
+@TeleOp(name = "reverseXDrive")
+public class reverseXYDrive extends LinearOpMode{
 
     DcMotor LF;
     DcMotor RF;
@@ -69,7 +69,7 @@ public class reverseYDrive extends LinearOpMode{
 
             //MECHANUM DRIVE
             leftX = -gamepad1.left_stick_y;
-            leftY = gamepad1.left_stick_x;
+            leftY = -gamepad1.left_stick_x;
             //below, check math
             angle = Math.atan2(leftX, -leftY) - (pi / 2);
             speed = Math.sqrt(leftX * leftX + leftY * leftY);

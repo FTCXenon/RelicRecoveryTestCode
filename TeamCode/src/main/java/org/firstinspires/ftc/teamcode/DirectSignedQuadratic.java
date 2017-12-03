@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Created by bridgetmacmillan on 9/26/17.
  */
 
-@TeleOp(name = "reverseXDrive")
-public class reverseXDrive extends LinearOpMode{
+@TeleOp(name = "DirectSignedQuadratic")
+public class DirectSignedQuadratic extends LinearOpMode{
 
     DcMotor LF;
     DcMotor RF;
@@ -68,8 +68,10 @@ public class reverseXDrive extends LinearOpMode{
         while (opModeIsActive()) {
 
             //MECHANUM DRIVE
-            leftX = gamepad1.left_stick_y;
-            leftY = -gamepad1.left_stick_x;
+
+            leftX = (Math.pow(gamepad1.left_stick_y,3.0)/(Math.abs(gamepad1.left_stick_y)));
+            leftY = (Math.pow(gamepad1.left_stick_x,3.0)/(Math.abs(gamepad1.left_stick_x)));
+
             //below, check math
             angle = Math.atan2(leftX, -leftY) - (pi / 2);
             speed = Math.sqrt(leftX * leftX + leftY * leftY);
@@ -168,6 +170,7 @@ public class reverseXDrive extends LinearOpMode{
             //Clockwise
             while (gamepad1.right_stick_x > 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
+//                motorPower = Math.abs(Math.pow(motorPower,3.0)/(Math.abs(motorPower)));
 
                 LF.setPower(motorPower);
                 RF.setPower(-motorPower);
@@ -177,6 +180,7 @@ public class reverseXDrive extends LinearOpMode{
             //Counter-Clockwise
             while (gamepad1.right_stick_x < 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
+//                motorPower = Math.abs(Math.pow(motorPower,3.0)/(Math.abs(motorPower)));
 
                 LF.setPower(-motorPower);
                 LB.setPower(-motorPower);
