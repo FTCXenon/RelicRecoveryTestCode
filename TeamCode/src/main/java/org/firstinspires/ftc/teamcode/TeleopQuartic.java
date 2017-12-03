@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Created by bridgetmacmillan on 9/26/17.
  */
 
-@TeleOp(name = "DirectSignedQuadratic")
-public class DirectSignedQuadratic extends LinearOpMode{
+@TeleOp(name = "TeleopQuartic")
+public class TeleopQuartic extends LinearOpMode{
 
     DcMotor LF;
     DcMotor RF;
@@ -29,9 +29,11 @@ public class DirectSignedQuadratic extends LinearOpMode{
     double leftY;
     double motorPower;
 
-    Servo jointOneLeft;
-    Servo jointOneRight;
-    Servo jointTwo;
+    DcMotor jointOneRight;
+
+//    Servo jointOneLeft;
+//    Servo jointOneRight;
+//    Servo jointTwo;
 
     //
     Servo clawRotate;
@@ -46,21 +48,16 @@ public class DirectSignedQuadratic extends LinearOpMode{
     public void runOpMode() throws InterruptedException {
         MechanumInit();
 
-        jointOneLeft = hardwareMap.get(Servo.class, "J1L");
-        jointOneRight = hardwareMap.get(Servo.class, "J1R");
 
-        jointTwo = hardwareMap.get(Servo.class, "J2");
-
-        //
         clawRotate = hardwareMap.get(Servo.class, "S");
         clawLeft = hardwareMap.get(Servo.class, "CL");
         clawRight = hardwareMap.get(Servo.class, "CR");
-        //
 
-        jointOneRight.setPosition(0.5);
-        jointOneLeft.setPosition(0.5);
+        jointOneRight = hardwareMap.dcMotor.get("J1R");
+
+
+
         clawRotate.setPosition(0.5);
-        jointTwo.setPosition(0.5);
 
         waitForStart();
 
@@ -68,13 +65,12 @@ public class DirectSignedQuadratic extends LinearOpMode{
         while (opModeIsActive()) {
 
             //MECHANUM DRIVE
-
-            leftX = (Math.pow(gamepad1.left_stick_y,3.0)/(Math.abs(gamepad1.left_stick_y)));
-            leftY = (Math.pow(gamepad1.left_stick_x,3.0)/(Math.abs(gamepad1.left_stick_x)));
-
+            leftX = -gamepad1.left_stick_y;
+            leftY = -gamepad1.left_stick_x;
             //below, check math
             angle = Math.atan2(leftX, -leftY) - (pi / 2);
             speed = Math.sqrt(leftX * leftX + leftY * leftY);
+            speed = (Math.pow(speed,5.0)/(Math.abs(speed)));
             dchange = -(leftX * leftX) / 3.33;
             posRF = speed * Math.sin(angle + (Math.PI / 4)) + dchange;
             posLF = speed * Math.cos(angle + (Math.PI / 4)) + dchange;
@@ -100,25 +96,17 @@ public class DirectSignedQuadratic extends LinearOpMode{
                 maxValue = Math.abs(posLB);
             }
 
-            if (gamepad2.right_stick_y > 0.2) {
-                jointOneLeft.setPosition(0.8);
-                jointOneRight.setPosition(0.2);
-            } else if (gamepad2.right_stick_y < -0.2) {
-                jointOneLeft.setPosition(0.2);
-                jointOneRight.setPosition(0.8);
-            } else {
-                jointOneLeft.setPosition(0.5);
-                jointOneRight.setPosition(0.5);
-            }
 
-            if (gamepad2.left_stick_y > 0.2) {
-                jointTwo.setPosition(1);
-            } else if (gamepad2.left_stick_y < -0.2) {
-                jointTwo.setPosition(0);
-            } else {
-                jointTwo.setPosition(0.5);
-            }
 
+            if (gamepad2.right_stick_y > 0) {
+                jointOneRight.setPower((Math.pow(gamepad2.right_stick_y,5.0)/(Math.abs(gamepad2.right_stick_y))));
+            } else if (gamepad2.right_stick_y < 0){
+                jointOneRight.setPower(-(Math.pow(gamepad2.right_stick_y,5.0)/(Math.abs(gamepad2.right_stick_y))));
+            } else if (gamepad2.right_stick_y == 0) {
+                jointOneRight.setPower(0);
+            } else {
+                jointOneRight.setPower(0);
+            }
 
             //
             if (gamepad2.x){
@@ -156,21 +144,18 @@ public class DirectSignedQuadratic extends LinearOpMode{
                 maxValue = 1;
             }
 
-//            RF.setPower(Math.pow((posRF / maxValue),3.0)/(Math.abs(posRF / maxValue)));
-//            LF.setPower(Math.pow((posLF / maxValue),3.0)/(Math.abs(posLF / maxValue)));
-//            RB.setPower(Math.pow((posRB / maxValue),3.0)/(Math.abs(posRB / maxValue)));
-//            LB.setPower(Math.pow((posLB / maxValue),3.0)/(Math.abs(posLB / maxValue)));
 
             RF.setPower(posRF / maxValue);
             LF.setPower(posLF / maxValue);
             RB.setPower(posRB / maxValue);
             LB.setPower(posLB / maxValue);
 
+
             //Rotate
             //Clockwise
             while (gamepad1.right_stick_x > 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
-//                motorPower = Math.abs(Math.pow(motorPower,3.0)/(Math.abs(motorPower)));
+                motorPower = (Math.pow(motorPower,5.0)/(Math.abs(motorPower)));
 
                 LF.setPower(motorPower);
                 RF.setPower(-motorPower);
@@ -180,7 +165,7 @@ public class DirectSignedQuadratic extends LinearOpMode{
             //Counter-Clockwise
             while (gamepad1.right_stick_x < 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
-//                motorPower = Math.abs(Math.pow(motorPower,3.0)/(Math.abs(motorPower)));
+                motorPower = (Math.pow(motorPower,5.0)/(Math.abs(motorPower)));
 
                 LF.setPower(-motorPower);
                 LB.setPower(-motorPower);

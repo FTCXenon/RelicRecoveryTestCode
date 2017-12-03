@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Created by bridgetmacmillan on 9/26/17.
  */
 
-@TeleOp(name = "TeleopArmEditV1")
-public class TeleopArmEditV1 extends LinearOpMode{
+@TeleOp(name = "TeleopRegular")
+public class TeleopRegular extends LinearOpMode{
 
     DcMotor LF;
     DcMotor RF;
@@ -48,24 +48,16 @@ public class TeleopArmEditV1 extends LinearOpMode{
     public void runOpMode() throws InterruptedException {
         MechanumInit();
 
-//        jointOneLeft = hardwareMap.get(Servo.class, "J1L");
-//        jointOneRight = hardwareMap.get(Servo.class, "J1R");
 
-//        jointTwo = hardwareMap.get(Servo.class, "J2");
-
-        //
         clawRotate = hardwareMap.get(Servo.class, "S");
         clawLeft = hardwareMap.get(Servo.class, "CL");
         clawRight = hardwareMap.get(Servo.class, "CR");
-        //
 
         jointOneRight = hardwareMap.dcMotor.get("J1R");
 
 
-//        jointOneRight.setPosition(0.5);
-//        jointOneLeft.setPosition(0.5);
+
         clawRotate.setPosition(0.5);
-//        jointTwo.setPosition(0.5);
 
         waitForStart();
 
@@ -73,8 +65,8 @@ public class TeleopArmEditV1 extends LinearOpMode{
         while (opModeIsActive()) {
 
             //MECHANUM DRIVE
-            leftX = gamepad1.left_stick_y;
-            leftY = gamepad1.left_stick_x;
+            leftX = -gamepad1.left_stick_y;
+            leftY = -gamepad1.left_stick_x;
             //below, check math
             angle = Math.atan2(leftX, -leftY) - (pi / 2);
             speed = Math.sqrt(leftX * leftX + leftY * leftY);
@@ -103,29 +95,12 @@ public class TeleopArmEditV1 extends LinearOpMode{
                 maxValue = Math.abs(posLB);
             }
 
-//            if (gamepad2.right_stick_y > 0.2) {
-//                jointOneLeft.setPosition(0.8);
-//                jointOneRight.setPosition(0.2);
-//            } else if (gamepad2.right_stick_y < -0.2) {
-//                jointOneLeft.setPosition(0.2);
-//                jointOneRight.setPosition(0.8);
-//            } else {
-//                jointOneLeft.setPosition(0.5);
-//                jointOneRight.setPosition(0.5);
-//            }
-//            if (gamepad2.left_stick_y > 0.2) {
-//                jointTwo.setPosition(1);
-//            } else if (gamepad2.left_stick_y < -0.2) {
-//                jointTwo.setPosition(0);
-//            } else {
-//                jointTwo.setPosition(0.5);
-//            }
 
 
             if (gamepad2.right_stick_y > 0) {
-                jointOneRight.setPower(0.5);
+                jointOneRight.setPower((Math.pow(gamepad2.right_stick_y,5.0)/(Math.abs(gamepad2.right_stick_y))));
             } else if (gamepad2.right_stick_y < 0){
-                jointOneRight.setPower(-0.5);
+                jointOneRight.setPower(-(Math.pow(gamepad2.right_stick_y,5.0)/(Math.abs(gamepad2.right_stick_y))));
             } else if (gamepad2.right_stick_y == 0) {
                 jointOneRight.setPower(0);
             } else {
@@ -167,22 +142,18 @@ public class TeleopArmEditV1 extends LinearOpMode{
             if (maxValue <= 1) {
                 maxValue = 1;
             }
-            RF.setPower(Math.pow((posRF / maxValue),5.0)/(Math.abs(posRF / maxValue)));
-            LF.setPower(Math.pow((posLF / maxValue),5.0)/(Math.abs(posLF / maxValue)));
-            RB.setPower(Math.pow((posRB / maxValue),5.0)/(Math.abs(posRB / maxValue)));
-            LB.setPower(Math.pow((posLB / maxValue),5.0)/(Math.abs(posLB / maxValue)));
 
-//            RF.setPower(posRF / maxValue);
-//            LF.setPower(posLF / maxValue);
-//            RB.setPower(posRB / maxValue);
-//            LB.setPower(posLB / maxValue);
+
+            RF.setPower(posRF / maxValue);
+            LF.setPower(posLF / maxValue);
+            RB.setPower(posRB / maxValue);
+            LB.setPower(posLB / maxValue);
 
 
             //Rotate
             //Clockwise
             while (gamepad1.right_stick_x > 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
-                motorPower = Math.pow(motorPower,5.0)/(Math.abs(motorPower));
 
                 LF.setPower(motorPower);
                 RF.setPower(-motorPower);
@@ -192,7 +163,6 @@ public class TeleopArmEditV1 extends LinearOpMode{
             //Counter-Clockwise
             while (gamepad1.right_stick_x < 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
-                motorPower = Math.pow(motorPower,5.0)/(Math.abs(motorPower));
 
                 LF.setPower(-motorPower);
                 LB.setPower(-motorPower);

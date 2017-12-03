@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Created by bridgetmacmillan on 9/26/17.
  */
 
-@TeleOp(name = "reverseXDrive")
-public class reverseXYDrive extends LinearOpMode{
+@TeleOp(name = "TeleopScaled")
+public class TeleopScaled extends LinearOpMode{
 
     DcMotor LF;
     DcMotor RF;
@@ -29,9 +29,11 @@ public class reverseXYDrive extends LinearOpMode{
     double leftY;
     double motorPower;
 
-    Servo jointOneLeft;
-    Servo jointOneRight;
-    Servo jointTwo;
+    DcMotor jointOneRight;
+
+//    Servo jointOneLeft;
+//    Servo jointOneRight;
+//    Servo jointTwo;
 
     //
     Servo clawRotate;
@@ -46,21 +48,16 @@ public class reverseXYDrive extends LinearOpMode{
     public void runOpMode() throws InterruptedException {
         MechanumInit();
 
-        jointOneLeft = hardwareMap.get(Servo.class, "J1L");
-        jointOneRight = hardwareMap.get(Servo.class, "J1R");
 
-        jointTwo = hardwareMap.get(Servo.class, "J2");
-
-        //
         clawRotate = hardwareMap.get(Servo.class, "S");
         clawLeft = hardwareMap.get(Servo.class, "CL");
         clawRight = hardwareMap.get(Servo.class, "CR");
-        //
 
-        jointOneRight.setPosition(0.5);
-        jointOneLeft.setPosition(0.5);
+        jointOneRight = hardwareMap.dcMotor.get("J1R");
+
+
+
         clawRotate.setPosition(0.5);
-        jointTwo.setPosition(0.5);
 
         waitForStart();
 
@@ -98,25 +95,17 @@ public class reverseXYDrive extends LinearOpMode{
                 maxValue = Math.abs(posLB);
             }
 
-            if (gamepad2.right_stick_y > 0.2) {
-                jointOneLeft.setPosition(0.8);
-                jointOneRight.setPosition(0.2);
-            } else if (gamepad2.right_stick_y < -0.2) {
-                jointOneLeft.setPosition(0.2);
-                jointOneRight.setPosition(0.8);
-            } else {
-                jointOneLeft.setPosition(0.5);
-                jointOneRight.setPosition(0.5);
-            }
 
-            if (gamepad2.left_stick_y > 0.2) {
-                jointTwo.setPosition(1);
-            } else if (gamepad2.left_stick_y < -0.2) {
-                jointTwo.setPosition(0);
-            } else {
-                jointTwo.setPosition(0.5);
-            }
 
+            if (gamepad2.right_stick_y > 0) {
+                jointOneRight.setPower((Math.pow(gamepad2.right_stick_y,5.0)/(Math.abs(gamepad2.right_stick_y))));
+            } else if (gamepad2.right_stick_y < 0){
+                jointOneRight.setPower(-(Math.pow(gamepad2.right_stick_y,5.0)/(Math.abs(gamepad2.right_stick_y))));
+            } else if (gamepad2.right_stick_y == 0) {
+                jointOneRight.setPower(0);
+            } else {
+                jointOneRight.setPower(0);
+            }
 
             //
             if (gamepad2.x){
@@ -154,34 +143,30 @@ public class reverseXYDrive extends LinearOpMode{
                 maxValue = 1;
             }
 
-//            RF.setPower(Math.pow((posRF / maxValue),3.0)/(Math.abs(posRF / maxValue)));
-//            LF.setPower(Math.pow((posLF / maxValue),3.0)/(Math.abs(posLF / maxValue)));
-//            RB.setPower(Math.pow((posRB / maxValue),3.0)/(Math.abs(posRB / maxValue)));
-//            LB.setPower(Math.pow((posLB / maxValue),3.0)/(Math.abs(posLB / maxValue)));
+            RF.setPower((posRF / maxValue)/1.4);
+            LF.setPower((posLF / maxValue)/1.4);
+            RB.setPower((posRB / maxValue)/1.4);
+            LB.setPower((posLB / maxValue)/1.4);
 
-            RF.setPower(posRF / maxValue);
-            LF.setPower(posLF / maxValue);
-            RB.setPower(posRB / maxValue);
-            LB.setPower(posLB / maxValue);
 
             //Rotate
             //Clockwise
             while (gamepad1.right_stick_x > 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
 
-                LF.setPower(motorPower);
-                RF.setPower(-motorPower);
-                LB.setPower(motorPower);
-                RB.setPower(-motorPower);
+                LF.setPower(motorPower/1.4);
+                RF.setPower(-motorPower/1.4);
+                LB.setPower(motorPower/1.4);
+                RB.setPower(-motorPower/1.4);
             }
             //Counter-Clockwise
             while (gamepad1.right_stick_x < 0) {
                 motorPower = Math.abs(gamepad1.right_stick_x);
 
-                LF.setPower(-motorPower);
-                LB.setPower(-motorPower);
-                RF.setPower(motorPower);
-                RB.setPower(motorPower);
+                LF.setPower(-motorPower/1.4);
+                LB.setPower(-motorPower/1.4);
+                RF.setPower(motorPower/1.4);
+                RB.setPower(motorPower/1.4);
             }
 
             telemetry.update();
