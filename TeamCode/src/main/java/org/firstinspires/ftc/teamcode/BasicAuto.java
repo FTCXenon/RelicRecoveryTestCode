@@ -18,6 +18,7 @@ public class BasicAuto extends LinearOpMode{
         RF = hardwareMap.dcMotor.get("RF");
         LB = hardwareMap.dcMotor.get("LB");
         RB = hardwareMap.dcMotor.get("RB");
+
         waitForStart();
         LF.setPower(-6);
         RF.setPower(6);
